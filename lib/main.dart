@@ -1,125 +1,435 @@
 import 'package:flutter/material.dart';
 
+/// Hàm main là điểm khởi đầu của ứng dụng Flutter
+/// runApp() khởi chạy ứng dụng với widget gốc (root widget)
 void main() {
   runApp(const MyApp());
 }
 
+/// MyApp là widget gốc của ứng dụng
+/// Đây là StatelessWidget vì nó không cần thay đổi trạng thái
+/// MaterialApp cung cấp các thành phần Material Design cơ bản
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Training - State Lifecycle',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // Màn hình chính của ứng dụng
+      home: const HomeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+/// Màn hình chính - HomeScreen
+/// Màn hình này có nút để điều hướng đến LifecycleDemoScreen
+/// Khi quay lại, chúng ta có thể quan sát lifecycle methods được gọi
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
+        title: const Text('Màn hình chính'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
             const Text(
-              'You have pushed the button this many times:',
+              'Nhấn nút bên dưới để xem\nLifecycle Demo',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Navigator.push tạo một route mới và đẩy vào stack
+                // Khi điều hướng, LifecycleDemoScreen sẽ được tạo
+                // => initState() sẽ được gọi
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LifecycleDemoScreen(),
+                  ),
+                );
+              },
+              child: const Text('Xem Lifecycle Demo'),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+/// ============================================
+/// LIFECYCLE DEMO SCREEN
+/// ============================================
+///
+/// Màn hình này minh họa tất cả các lifecycle methods của StatefulWidget
+/// Mỗi lifecycle method sẽ in log ra console để bạn có thể theo dõi
+///
+/// VÒNG ĐỜI CỦA STATEFULWIDGET:
+/// 1. createState() - Tạo State object (tự động, không override)
+/// 2. initState() - Khởi tạo, chỉ gọi 1 lần
+/// 3. didChangeDependencies() - Gọi sau initState(), có thể gọi nhiều lần
+/// 4. build() - Xây dựng UI, gọi nhiều lần
+/// 5. didUpdateWidget() - Khi widget được cập nhật (props thay đổi)
+/// 6. dispose() - Dọn dẹp, chỉ gọi 1 lần khi widget bị hủy
+class LifecycleDemoScreen extends StatefulWidget {
+  const LifecycleDemoScreen({super.key});
+
+  @override
+  State<LifecycleDemoScreen> createState() => _LifecycleDemoScreenState();
+}
+
+/// State class quản lý trạng thái và lifecycle của LifecycleDemoScreen
+class _LifecycleDemoScreenState extends State<LifecycleDemoScreen> {
+  // Biến đếm để minh họa setState()
+  int _counter = 0;
+
+  // Biến để lưu số lần build() được gọi
+  int _buildCount = 0;
+
+  /// ============================================
+  /// 1. initState()
+  /// ============================================
+  ///
+  /// Được gọi CHỈ MỘT LẦN khi State object được tạo
+  ///
+  /// Khi nào được gọi:
+  /// - Ngay sau khi createState() tạo State object
+  /// - TRƯỚC build() method lần đầu tiên
+  ///
+  /// Dùng để làm gì:
+  /// - Khởi tạo dữ liệu
+  /// - Đăng ký listeners (Stream, AnimationController, etc.)
+  /// - Gọi API một lần
+  /// - Thiết lập các giá trị ban đầu
+  ///
+  /// LƯU Ý:
+  /// - KHÔNG gọi setState() ở đây (sẽ gây lỗi)
+  /// - KHÔNG truy cập BuildContext.dependOnInheritedWidgetOfExactType() ở đây
+  /// - Nếu cần, dùng SchedulerBinding.instance.addPostFrameCallback()
+  @override
+  void initState() {
+    super.initState(); // QUAN TRỌNG: Luôn gọi super.initState() trước
+
+    debugPrint('═══════════════════════════════════════');
+    print('🟢 initState() được gọi');
+    print('   → Widget vừa được tạo');
+    print('   → Đây là nơi khởi tạo dữ liệu');
+    print('═══════════════════════════════════════');
+
+    // Ví dụ: Khởi tạo giá trị ban đầu
+    _counter = 0;
+    _buildCount = 0;
+  }
+
+  /// ============================================
+  /// 2. didChangeDependencies()
+  /// ============================================
+  ///
+  /// Được gọi SAU initState() và SAU build() lần đầu
+  /// Có thể được gọi NHIỀU LẦN nếu InheritedWidget thay đổi
+  ///
+  /// Khi nào được gọi:
+  /// - Sau initState() (lần đầu)
+  /// - Khi InheritedWidget mà widget này phụ thuộc vào thay đổi
+  /// - Ví dụ: Theme, MediaQuery, Localizations thay đổi
+  ///
+  /// Dùng để làm gì:
+  /// - Lấy dữ liệu từ InheritedWidget (Theme, MediaQuery, etc.)
+  /// - Khởi tạo dữ liệu phụ thuộc vào context
+  ///
+  /// LƯU Ý:
+  /// - Có thể gọi setState() ở đây (nhưng cẩn thận)
+  /// - Được gọi trước build() lần đầu tiên
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies(); // QUAN TRỌNG: Luôn gọi super
+
+    print('🟡 didChangeDependencies() được gọi');
+    print('   → Dependencies đã sẵn sàng');
+    print('   → Có thể truy cập Theme, MediaQuery, etc.');
+
+    // Ví dụ: Lấy dữ liệu từ InheritedWidget
+    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+    print('   → Theme primary color: ${theme.colorScheme.primary}');
+    print('   → Screen width: ${mediaQuery.size.width}');
+  }
+
+  /// ============================================
+  /// 3. build()
+  /// ============================================
+  ///
+  /// Được gọi NHIỀU LẦN để xây dựng UI
+  ///
+  /// Khi nào được gọi:
+  /// - Sau initState() và didChangeDependencies() (lần đầu)
+  /// - Mỗi khi setState() được gọi
+  /// - Khi parent widget rebuild và truyền props mới
+  /// - Khi InheritedWidget thay đổi (nếu widget phụ thuộc)
+  ///
+  /// Dùng để làm gì:
+  /// - Xây dựng widget tree (UI)
+  /// - Trả về widget để hiển thị
+  ///
+  /// LƯU Ý:
+  /// - KHÔNG gọi setState() ở đây (gây vòng lặp vô hạn)
+  /// - KHÔNG thực hiện logic nặng ở đây
+  /// - build() phải là pure function (không có side effects)
+  /// - build() có thể được gọi 60 lần/giây (60 FPS)
+  @override
+  Widget build(BuildContext context) {
+    // Tăng số lần build() được gọi
+    _buildCount++;
+
+    print('🔵 build() được gọi (lần $_buildCount)');
+    print('   → Xây dựng UI với counter = $_counter');
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Lifecycle Demo'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Card hiển thị thông tin lifecycle
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Lifecycle Methods',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildLifecycleInfo('initState()', 'Đã gọi', Colors.green),
+                    _buildLifecycleInfo(
+                        'didChangeDependencies()', 'Đã gọi', Colors.orange),
+                    _buildLifecycleInfo(
+                        'build()', 'Đã gọi $_buildCount lần', Colors.blue),
+                    _buildLifecycleInfo(
+                        'didUpdateWidget()', 'Chưa gọi', Colors.grey),
+                    _buildLifecycleInfo('dispose()', 'Chưa gọi', Colors.red),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Card hiển thị counter
+            Card(
+              elevation: 4,
+              color: Colors.blue.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Counter Demo',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '$_counter',
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                            color: Colors.blue,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        // setState() sẽ trigger build() được gọi lại
+                        setState(() {
+                          _counter++;
+                        });
+                        print(
+                            '   → setState() được gọi → build() sẽ được gọi lại');
+                      },
+                      child: const Text('Tăng Counter'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Hướng dẫn
+            Card(
+              color: Colors.amber.shade50,
+              child: const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '📝 Hướng dẫn:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text('1. Xem console để theo dõi lifecycle methods'),
+                    Text('2. Nhấn "Tăng Counter" → build() được gọi lại'),
+                    Text('3. Nhấn "Quay lại" → dispose() được gọi'),
+                    Text(
+                        '4. Nhấn "Xem Lifecycle Demo" lại → initState() được gọi lại'),
+                  ],
+                ),
+              ),
+            ),
+
+            const Spacer(),
+
+            // Nút quay lại
+            ElevatedButton(
+              onPressed: () {
+                // Navigator.pop() xóa route hiện tại khỏi stack
+                // => dispose() sẽ được gọi
+                print('   → Navigator.pop() được gọi → dispose() sẽ được gọi');
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text('Quay lại (Gọi dispose())'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Helper method để hiển thị thông tin lifecycle
+  Widget _buildLifecycleInfo(String method, String status, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            method,
+            style: const TextStyle(
+              fontFamily: 'monospace',
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '→ $status',
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ============================================
+  /// 4. didUpdateWidget()
+  /// ============================================
+  ///
+  /// Được gọi khi widget được CẬP NHẬT với widget mới cùng loại
+  ///
+  /// Khi nào được gọi:
+  /// - Khi parent widget rebuild và truyền widget mới (cùng type)
+  /// - Widget cũ và widget mới có cùng runtimeType
+  /// - Widget mới có props khác với widget cũ
+  ///
+  /// Dùng để làm gì:
+  /// - So sánh props cũ và mới
+  /// - Cập nhật state dựa trên props mới
+  /// - Hủy đăng ký listeners cũ và đăng ký listeners mới
+  ///
+  /// LƯU Ý:
+  /// - Được gọi TRƯỚC build() khi widget được cập nhật
+  /// - Có thể gọi setState() ở đây
+  /// - oldWidget chứa props cũ để so sánh
+  @override
+  void didUpdateWidget(LifecycleDemoScreen oldWidget) {
+    super.didUpdateWidget(oldWidget); // QUAN TRỌNG: Luôn gọi super
+
+    print('🟣 didUpdateWidget() được gọi');
+    print('   → Widget được cập nhật với props mới');
+    print('   → oldWidget: $oldWidget');
+    print('   → widget: ${widget}');
+
+    // Ví dụ: So sánh và cập nhật state
+    // Nếu có props thay đổi, có thể cập nhật state ở đây
+  }
+
+  /// ============================================
+  /// 5. dispose()
+  /// ============================================
+  ///
+  /// Được gọi CHỈ MỘT LẦN khi State object bị HỦY
+  ///
+  /// Khi nào được gọi:
+  /// - Khi widget bị xóa vĩnh viễn khỏi widget tree
+  /// - Khi Navigator.pop() được gọi
+  /// - Khi parent widget rebuild và không còn widget này
+  ///
+  /// Dùng để làm gì:
+  /// - Hủy đăng ký listeners (Stream, AnimationController, etc.)
+  /// - Đóng connections (database, network, etc.)
+  /// - Giải phóng tài nguyên (timers, file handles, etc.)
+  /// - Dọn dẹp để tránh memory leaks
+  ///
+  /// LƯU Ý:
+  /// - KHÔNG gọi setState() ở đây (widget đã bị hủy)
+  /// - KHÔNG truy cập BuildContext sau dispose()
+  /// - QUAN TRỌNG: Luôn hủy đăng ký listeners để tránh memory leaks
+  @override
+  void dispose() {
+    print('═══════════════════════════════════════');
+    print('🔴 dispose() được gọi');
+    print('   → Widget đang bị hủy');
+    print('   → Đây là nơi dọn dẹp tài nguyên');
+    print('   → Hủy đăng ký listeners, đóng connections, etc.');
+    print('═══════════════════════════════════════');
+
+    // Ví dụ: Hủy đăng ký listeners
+    // streamSubscription?.cancel();
+    // animationController?.dispose();
+    // timer?.cancel();
+
+    super.dispose(); // QUAN TRỌNG: Luôn gọi super.dispose() CUỐI CÙNG
   }
 }
